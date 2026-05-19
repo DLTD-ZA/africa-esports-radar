@@ -1,0 +1,60 @@
+# FlareSolverr stack for aer-feeds: Cloudflare-bypass scraper exposed via
+# Cloudflare Tunnel at flare.dkhome.web.za. Three stock containers,
+# no custom image build.
+#
+# Bring it up:
+#   1. Create .env from .env.example, fill in AUTH_TOKEN and TUNNEL_TOKEN
+#   2. docker compose up -d
+#   3. Verify: curl https://flare.dkhome.web.za/healthz   →  {"ok":true}
+#   4. Verify auth: curl -H "Authorization: Bearer $AUTH_TOKEN" \
+#        -d '{"cmd":"request.get","url":"https://glitched.online/feed/"}' \
+#        -H "Content-Type: application/json" \
+#        https://flare.dkhome.web.za/v1
+
+services:
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: aer-flaresolverr
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=info
+      - LOG_HTML=false
+      - CAPTCHA_SOLVER=none
+      - TZ=Africa/Johannesburg
+    networks:
+      - flare-net
+    # No ports — only reachable via the internal docker network.
+
+  proxy:
+    image: node:20-alpine
+    container_name: aer-flare-proxy
+    restart: unless-stopped
+    depends_on:
+      - flaresolverr
+    environment:
+      - PORT=8080
+      - UPSTREAM_HOST=flaresolverr
+      - UPSTREAM_PORT=8191
+      - AUTH_TOKEN=${AUTH_TOKEN}
+    volumes:
+      - ./proxy.mjs:/app/proxy.mjs:ro
+    working_dir: /app
+    command: ["node", "/app/proxy.mjs"]
+    networks:
+      - flare-net
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: aer-cloudflared
+    restart: unless-stopped
+    depends_on:
+      - proxy
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    command: ["tunnel", "--no-autoupdate", "run"]
+    networks:
+      - flare-net
+
+networks:
+  flare-net:
+    driver: bridge
