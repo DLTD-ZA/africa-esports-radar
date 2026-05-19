@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Africa Esports Radar</title>
+    <meta
+      name="description"
+      content="Aggregated esports and gaming intelligence for South Africa and the African continent."
+    />
+    <meta name="theme-color" content="#0a0a0a" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="masthead-inner">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <div class="brand-text">
+            <h1 class="wordmark">
+              Africa<span class="amp"> / </span>Esports<span class="amp"> / </span>Radar
+            </h1>
+            <p class="tagline">
+              Continental gaming &amp; esports intelligence — refreshed hourly
+            </p>
+          </div>
+        </div>
+        <div class="status" id="status">
+          <div class="status-row">
+            <span class="status-label">LAST&nbsp;UPDATE</span>
+            <span class="status-value" id="last-update">—</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">SOURCES&nbsp;OK</span>
+            <span class="status-value" id="sources-ok">—</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">ITEMS</span>
+            <span class="status-value" id="items-count">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="filterbar" aria-label="Filters">
+      <div class="filter-group" data-filter="platform">
+        <span class="filter-label">PLATFORM</span>
+        <div class="chips" id="chips-platform"></div>
+      </div>
+      <div class="filter-group" data-filter="region">
+        <span class="filter-label">REGION</span>
+        <div class="chips" id="chips-region"></div>
+      </div>
+      <div class="filter-group" data-filter="category">
+        <span class="filter-label">TYPE</span>
+        <div class="chips" id="chips-category"></div>
+      </div>
+      <div class="filter-group" data-filter="game">
+        <span class="filter-label">GAME</span>
+        <div class="chips" id="chips-game"></div>
+      </div>
+      <div class="filter-group filter-search">
+        <span class="filter-label">SEARCH</span>
+        <input
+          type="search"
+          id="search"
+          placeholder="Filter by keyword…"
+          spellcheck="false"
+          autocomplete="off"
+        />
+      </div>
+    </nav>
+
+    <main class="feed" id="feed" aria-live="polite">
+      <div class="loading" id="loading">
+        <div class="loading-bar"></div>
+        <p>Sweeping continental signal …</p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <p>
+          <span class="footer-label">SIGNAL · </span>
+          Built as a static aggregator. Source health visible in
+          <a href="/api/feeds" target="_blank" rel="noopener">/api/feeds</a>.
+        </p>
+        <p class="footer-meta">
+          <span class="footer-label">CACHE · </span>
+          1h fresh · 24h stale-while-revalidate
+        </p>
+      </div>
+    </footer>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

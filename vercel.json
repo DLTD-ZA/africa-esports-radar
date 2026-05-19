@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/feeds.js": {
+      "memory": 512,
+      "maxDuration": 10
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/feeds",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}
