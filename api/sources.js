@@ -188,6 +188,18 @@ const SOURCES = [
   { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCgaDrFvLQXyo7Joqu_XLEZg",
     source: "Carry1st (YouTube)", platform: "YouTube",
     category: "video", region: "africa", games: ["multiple"] },
+
+  // ─── TELEGRAM (via self-hosted RSSHub — works from Vercel) ─────────────
+  { url: `${RSSHUB}/telegram/channel/vpesports`,
+    source: "VPEsports (Telegram)", platform: "Telegram",
+    category: "news", region: "global", games: ["multiple"],
+    keywords: AFRICA_KEYWORDS,
+    note: "International esports news; Africa-keyword filtered" },
+
+  { url: `${RSSHUB}/telegram/channel/motorsportsouthafrica`,
+    source: "Motorsport South Africa (Telegram)", platform: "Telegram",
+    category: "announcement", region: "sa", games: ["motorsport"],
+    note: "Real motorsport — sim racing adjacent" },
 ];
 
 module.exports = { SOURCES, AFRICA_KEYWORDS, RSSHUB };

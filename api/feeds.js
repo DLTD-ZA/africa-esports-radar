@@ -159,7 +159,7 @@ module.exports = async (req, res) => {
   const totalCount = sourceStatus.length;
 
   const payload = {
-    version: "0.3.0",
+    version: "0.3.1",
     generated_at: new Date().toISOString(),
     duration_ms: Date.now() - startedAt,
     sources_total: totalCount,
