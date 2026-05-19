@@ -67,12 +67,14 @@ const GAME_TO_TAG = {
 };
 
 async function fetchLiquipedia(game, pages) {
+  // Note: MediaWiki's rvlimit param only works with single-page queries.
+  // With multi-title queries it returns one revision per page by default,
+  // which is exactly what we want.
   const params = new URLSearchParams({
     action: "query",
     prop: "revisions",
     titles: pages.join("|"),
     rvprop: "timestamp|comment|user|ids|size",
-    rvlimit: "1",
     format: "json",
   });
   const url = `https://liquipedia.net/${game}/api.php?${params.toString()}`;
@@ -173,7 +175,7 @@ module.exports = async (req, res) => {
   });
 
   const payload = {
-    version: "0.4.1",
+    version: "0.4.2",
     endpoint: "esports",
     generated_at: new Date().toISOString(),
     duration_ms: Date.now() - startedAt,
