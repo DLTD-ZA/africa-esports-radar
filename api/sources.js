@@ -1,21 +1,25 @@
 // ============================================================================
-// Africa Esports Radar — curated source list (v0.2.2)
+// Africa Esports Radar — curated source list (v0.3.0)
 // ============================================================================
 //
-// Trimmed to 19 high-confidence entries after live verification on v0.2.1.
+// v0.3.0 (Phase 3a): added 11 SA/African YouTube channels via native
+// youtube.com/feeds/videos.xml feeds (Atom). No auth, no RSSHub, works from
+// Vercel IPs. Stragglers (DarknessRoshi, LosSantosLeaks) pending current handle.
 //
-// Removed (will be re-added via self-hosted RSSHub in Phase 3):
+// v0.2.2 baseline: 19 entries verified live after gzip fix.
 //
-//   CLOUDFLARE-BLOCKED FROM VERCEL IPS (5):
-//     - Glitched Africa, NAG, MyBroadband Gaming, Hypertext Gaming, HLTV
-//     → Need RSSHub-with-Chromium routes, or fetch from a non-Vercel IP
+// Still excluded (Cloudflare 403s Vercel IPs — confirmed RSSHub on Vercel
+// hits the same 403, awaiting FlareSolverr on a non-Vercel host):
+//   - Glitched Africa, NAG, MyBroadband Gaming, Hypertext Gaming, HLTV
 //
-//   WRONG URL / DEAD DOMAIN (4):
-//     - SA Gamer (404 at /feed/), Esports Charts (404 at /news.rss),
-//       Gaming and Esports SA (DNS NXDOMAIN), ACGL (no /rss.xml endpoint)
-//     → These need RSSHub bridge or manual feed URL discovery
+// Still excluded (wrong URL / dead domain):
+//   - SA Gamer, Esports Charts, Gaming and Esports SA, ACGL website
 //
 // ============================================================================
+
+// RSSHub instance — used selectively for routes that work from Vercel
+// (Telegram, generic XML bridges). NOT used for YouTube (native feeds beat it).
+const RSSHUB = "https://aer-rsshub.vercel.app";
 
 const AFRICA_KEYWORDS = [
   "africa", "african",
@@ -132,6 +136,58 @@ const SOURCES = [
     source: "r/pcmasterrace", platform: "Reddit",
     category: "community", region: "global", games: ["general"],
     keywords: AFRICA_KEYWORDS },
+
+  // ─── YOUTUBE (native Atom feeds — no auth, works from Vercel) ──────────
+  // URL pattern: https://www.youtube.com/feeds/videos.xml?channel_id=<UC...>
+  // Resolved 2026-05-19 from each channel's @handle page.
+  //
+  // STRAGGLERS (handles in brief return 404 — need current handle from Danie):
+  //   @DarknessRoshi  (2.1M+, SA GTA content)
+  //   @LosSantosLeaks (1.8M+, SA GTA content)
+
+  { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCjgzxIZmwSc-ksJRdGLIuMw",
+    source: "Grant Hinds (YouTube)", platform: "YouTube",
+    category: "video", region: "sa", games: ["general"] },
+
+  { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCpPpQ-TsXr3XTWmyr_mDo-w",
+    source: "ArcadeZA (YouTube)", platform: "YouTube",
+    category: "video", region: "sa", games: ["general"] },
+
+  { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCVlh1uuYKDvvHv6AgFZc-Bw",
+    source: "Glitched (YouTube)", platform: "YouTube",
+    category: "video", region: "sa", games: ["general"] },
+
+  { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCNleRx-SOy-qpTHohzsMS6Q",
+    source: "NAG (YouTube)", platform: "YouTube",
+    category: "video", region: "sa", games: ["general"] },
+
+  { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCTQJBEHfnRtTptn6CVs_dxw",
+    source: "Esports Central (YouTube)", platform: "YouTube",
+    category: "video", region: "sa", games: ["general"] },
+
+  { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCL3pNEgCMctHbqHHr2Ceq3A",
+    source: "Spyro ZA (YouTube)", platform: "YouTube",
+    category: "video", region: "sa", games: ["general"] },
+
+  { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCbyELsBEIp3BY5sIhD9chLg",
+    source: "Chani ZA (YouTube)", platform: "YouTube",
+    category: "video", region: "sa", games: ["general"] },
+
+  { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UC0zvD50_4-Jhgvad6kZoktA",
+    source: "Luca Rakic (YouTube)", platform: "YouTube",
+    category: "video", region: "sa", games: ["general"] },
+
+  { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCPZhHphk5dwumWfw2ehbOng",
+    source: "ACGL (YouTube)", platform: "YouTube",
+    category: "video", region: "africa", games: ["multiple"] },
+
+  { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCW583hog3QfQhVw_hhU-XIg",
+    source: "Mettlestate (YouTube)", platform: "YouTube",
+    category: "video", region: "sa", games: ["multiple"] },
+
+  { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCgaDrFvLQXyo7Joqu_XLEZg",
+    source: "Carry1st (YouTube)", platform: "YouTube",
+    category: "video", region: "africa", games: ["multiple"] },
 ];
 
-module.exports = { SOURCES, AFRICA_KEYWORDS };
+module.exports = { SOURCES, AFRICA_KEYWORDS, RSSHUB };

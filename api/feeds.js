@@ -1,6 +1,7 @@
 // Vercel serverless function: aggregates all RSS feeds, returns JSON.
 // Edge-cached for 1 hour with stale-while-revalidate.
 //
+// v0.3.0 — Phase 3a: 11 SA/African YouTube channels added via native Atom feeds.
 // v0.2.2 — uses native fetch (Node 18+) which auto-decompresses gzip/deflate/br.
 // rss-parser's internal HTTP layer (axios) does NOT decompress, which silently
 // broke ~8 sources in v0.2.1 with "Non-whitespace before first tag" errors.
@@ -158,7 +159,7 @@ module.exports = async (req, res) => {
   const totalCount = sourceStatus.length;
 
   const payload = {
-    version: "0.2.2",
+    version: "0.3.0",
     generated_at: new Date().toISOString(),
     duration_ms: Date.now() - startedAt,
     sources_total: totalCount,
