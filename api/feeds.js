@@ -13,7 +13,10 @@ const BROWSER_UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
   "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
 
-const FETCH_TIMEOUT_MS = 5500;
+// Bumped from 5.5s → 8s in v0.3.2 so RSSHub-backed Telegram sources can
+// cold-start within budget. Sources run in parallel via Promise.allSettled,
+// so the function still returns in ~max(timeouts) ≈ 8s, under the 10s cap.
+const FETCH_TIMEOUT_MS = 8000;
 
 // rss-parser used only for parsing — we do the HTTP ourselves with native fetch
 const parser = new Parser({
@@ -159,7 +162,7 @@ module.exports = async (req, res) => {
   const totalCount = sourceStatus.length;
 
   const payload = {
-    version: "0.3.1",
+    version: "0.3.2",
     generated_at: new Date().toISOString(),
     duration_ms: Date.now() - startedAt,
     sources_total: totalCount,
