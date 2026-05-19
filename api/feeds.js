@@ -70,6 +70,95 @@ async function fetchXml(url, timeoutMs = FETCH_TIMEOUT_MS) {
   }
 }
 
+// ─── DEDUP: simple-signal multi-source merging (Phase 5.0) ───────────────
+// Group near-identical headlines published within a short window across
+// different sources, collapse them into a single item carrying `sources: []`.
+// No embeddings, no API cost. Conservative: only merges cross-source items
+// with matching title shingles and Web/News platforms.
+
+const STORY_KEY_LEN = 60;
+const MERGE_WINDOW_MS = 12 * 60 * 60 * 1000; // 12 hours
+const STOP_WORDS = new Set([
+  "the", "a", "an", "and", "or", "but", "of", "in", "on", "at", "to", "for",
+  "with", "is", "are", "was", "were", "be", "been", "by", "as", "from", "this",
+  "that", "it", "its", "his", "her", "their", "our", "your",
+]);
+
+function storyKey(title) {
+  if (!title) return "";
+  const cleaned = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w && !STOP_WORDS.has(w))
+    .join(" ");
+  return cleaned.slice(0, STORY_KEY_LEN);
+}
+
+function mergeDuplicateStories(items) {
+  const groups = new Map();
+  const orphans = [];
+
+  for (const item of items) {
+    // Only merge Web/News platform items. YouTube/Reddit/Telegram are
+    // platform-distinct content even with similar titles.
+    if (item.platform !== "Web" && item.platform !== undefined) {
+      orphans.push(item);
+      continue;
+    }
+    const key = storyKey(item.title);
+    if (!key || key.length < 20) {
+      orphans.push(item);
+      continue;
+    }
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+
+  const out = [...orphans];
+  for (const group of groups.values()) {
+    if (group.length === 1) {
+      out.push(group[0]);
+      continue;
+    }
+    // Check items are from different sources and within MERGE_WINDOW_MS
+    const sortedByDate = group
+      .filter((it) => it.published)
+      .sort((a, b) => new Date(a.published) - new Date(b.published));
+    if (sortedByDate.length === 0) {
+      out.push(...group);
+      continue;
+    }
+    const earliest = sortedByDate[0];
+    const inWindow = group.filter((it) => {
+      if (!it.published) return false;
+      const dt = new Date(it.published) - new Date(earliest.published);
+      return dt >= 0 && dt <= MERGE_WINDOW_MS;
+    });
+    const distinctSources = new Set(inWindow.map((it) => it.source));
+    if (distinctSources.size < 2 || inWindow.length < 2) {
+      out.push(...group);
+      continue;
+    }
+    // Merge: keep the earliest item as the canonical, attach sources list.
+    const primary = earliest;
+    const sources = Array.from(distinctSources);
+    const merged = {
+      ...primary,
+      sources, // marker that this item is multi-source
+      source: primary.source, // keep original for backwards compat
+      merge_count: inWindow.length,
+    };
+    out.push(merged);
+    // Items in window that weren't picked are absorbed; items OUTSIDE the
+    // window stay as separate entries (likely follow-up coverage).
+    for (const it of group) {
+      if (!inWindow.includes(it)) out.push(it);
+    }
+  }
+  return out;
+}
+
 async function fetchSource(src) {
   try {
     const xml = await fetchXml(src.url);
@@ -133,7 +222,9 @@ module.exports = async (req, res) => {
     }
   }
 
-  deduped.sort((a, b) => {
+  const merged = mergeDuplicateStories(deduped);
+
+  merged.sort((a, b) => {
     if (!a.published && !b.published) return 0;
     if (!a.published) return 1;
     if (!b.published) return -1;
@@ -161,16 +252,20 @@ module.exports = async (req, res) => {
   const okCount = sourceStatus.filter((s) => s.ok).length;
   const totalCount = sourceStatus.length;
 
+  const mergedCount = merged.filter((it) => it.sources).length;
+
   const payload = {
-    version: "0.4.0",
+    version: "0.5.0",
     generated_at: new Date().toISOString(),
     duration_ms: Date.now() - startedAt,
     sources_total: totalCount,
     sources_ok: okCount,
-    items_total: deduped.length,
+    items_total: merged.length,
+    items_pre_merge: deduped.length,
+    stories_merged: mergedCount,
     platform_health: platformHealth,
     source_status: sourceStatus,
-    items: deduped,
+    items: merged,
   };
 
   res.setHeader(

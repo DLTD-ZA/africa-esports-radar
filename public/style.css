@@ -492,6 +492,21 @@ a {
 .item-tag.cat-tournament  { color: var(--c-tournament);  border-color: color-mix(in srgb, var(--c-tournament) 35%, var(--border-strong)); }
 .item-tag.cat-team-update { color: var(--c-team-update); border-color: color-mix(in srgb, var(--c-team-update) 35%, var(--border-strong)); }
 
+/* Multi-source story (Phase 5.0 dedup) */
+.item-multi { background: linear-gradient(to right, color-mix(in srgb, var(--signal) 4%, transparent), transparent 60%); }
+.item-source.multi { font-weight: 600; }
+.item-source .multi-count {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: var(--signal);
+  color: #000;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+}
+
 .item-tag.region-sa      { color: var(--signal); border-color: color-mix(in srgb, var(--signal) 40%, var(--border-strong)); }
 .item-tag.region-africa  { color: #ffb84a;       border-color: color-mix(in srgb, #ffb84a 35%, var(--border-strong)); }
 .item-tag.region-global  { color: var(--fg-muted); }

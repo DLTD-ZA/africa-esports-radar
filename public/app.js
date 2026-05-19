@@ -271,15 +271,27 @@ function renderItem(item) {
     )
     .join("");
 
+  // Multi-source item (Phase 5.0 dedup): show all source names
+  const sourceLabel =
+    item.sources && item.sources.length > 1
+      ? `<span class="item-source multi" title="Also covered by ${escapeAttr(
+          item.sources.slice(1).join(", ")
+        )}">${escapeHtml(item.sources[0])} <span class="multi-count">+${
+          item.sources.length - 1
+        }</span></span>`
+      : `<span class="item-source">${escapeHtml(item.source)}</span>`;
+
   return `
-    <article class="item">
+    <article class="item${
+      item.sources && item.sources.length > 1 ? " item-multi" : ""
+    }">
       <div class="item-time">${escapeHtml(time)}</div>
       <div class="item-body">
         <div class="item-meta">
           <span class="platform-badge plat-${escapeAttr(platform)}">${escapeHtml(
     PLATFORM_LABELS[platform] || platform
   )}</span>
-          <span class="item-source">${escapeHtml(item.source)}</span>
+          ${sourceLabel}
           <span class="item-dot"></span>
           <span class="item-tag cat-${escapeAttr(item.category)}">${escapeHtml(
     CATEGORY_LABELS[item.category] || item.category
