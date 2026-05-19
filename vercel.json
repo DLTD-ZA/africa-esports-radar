@@ -4,11 +4,15 @@
     "api/feeds.js": {
       "memory": 512,
       "maxDuration": 10
+    },
+    "api/esports.js": {
+      "memory": 512,
+      "maxDuration": 10
     }
   },
   "headers": [
     {
-      "source": "/api/feeds",
+      "source": "/api/(feeds|esports)",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" }
       ]
