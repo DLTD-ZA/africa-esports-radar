@@ -25,6 +25,8 @@
   --c-community: #7faaff;
   --c-video: #d986ff;
   --c-announcement: #ff8a5b;
+  --c-tournament: #ffd166;
+  --c-team-update: #7fe0c5;
 
   /* Platform brand colors (desaturated for dark theme) */
   --p-web: #b8b8b8;
@@ -37,6 +39,7 @@
   --p-mastodon: #6e9eff;
   --p-bluesky: #4ab5ff;
   --p-kick: #53d16a;
+  --p-telegram: #2caedb;
 
   /* Typography */
   --font-display: "Fraunces", "Times New Roman", serif;
@@ -295,6 +298,7 @@ a {
 .chip.plat-Mastodon  { border-color: color-mix(in srgb, var(--p-mastodon) 45%, var(--border-strong)); color: var(--p-mastodon); }
 .chip.plat-Bluesky   { border-color: color-mix(in srgb, var(--p-bluesky) 45%, var(--border-strong)); color: var(--p-bluesky); }
 .chip.plat-Kick      { border-color: color-mix(in srgb, var(--p-kick) 45%, var(--border-strong)); color: var(--p-kick); }
+.chip.plat-Telegram  { border-color: color-mix(in srgb, var(--p-telegram) 45%, var(--border-strong)); color: var(--p-telegram); }
 
 #search {
   background: var(--bg-elevated);
@@ -463,6 +467,7 @@ a {
 .platform-badge.plat-Mastodon  { background: var(--p-mastodon); color: #000; }
 .platform-badge.plat-Bluesky   { background: var(--p-bluesky); color: #000; }
 .platform-badge.plat-Kick      { background: var(--p-kick); color: #000; }
+.platform-badge.plat-Telegram  { background: var(--p-telegram); color: #fff; }
 
 .item-source {
   color: var(--fg);
@@ -484,6 +489,8 @@ a {
 .item-tag.cat-community  { color: var(--c-community);    border-color: color-mix(in srgb, var(--c-community) 35%, var(--border-strong)); }
 .item-tag.cat-video      { color: var(--c-video);        border-color: color-mix(in srgb, var(--c-video) 35%, var(--border-strong)); }
 .item-tag.cat-announcement { color: var(--c-announcement); border-color: color-mix(in srgb, var(--c-announcement) 35%, var(--border-strong)); }
+.item-tag.cat-tournament  { color: var(--c-tournament);  border-color: color-mix(in srgb, var(--c-tournament) 35%, var(--border-strong)); }
+.item-tag.cat-team-update { color: var(--c-team-update); border-color: color-mix(in srgb, var(--c-team-update) 35%, var(--border-strong)); }
 
 .item-tag.region-sa      { color: var(--signal); border-color: color-mix(in srgb, var(--signal) 40%, var(--border-strong)); }
 .item-tag.region-africa  { color: #ffb84a;       border-color: color-mix(in srgb, #ffb84a 35%, var(--border-strong)); }

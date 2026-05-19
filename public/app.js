@@ -13,6 +13,8 @@ const CATEGORY_LABELS = {
   community: "Community",
   video: "Video",
   announcement: "Announcement",
+  tournament: "Tournament",
+  "team-update": "Team",
 };
 
 const PLATFORM_LABELS = {
@@ -26,6 +28,7 @@ const PLATFORM_LABELS = {
   Mastodon: "Mastodon",
   Bluesky: "Bluesky",
   Kick: "Kick",
+  Telegram: "Telegram",
 };
 
 const GAME_LABELS = {
@@ -60,31 +63,74 @@ const state = {
 // ─── FETCH ────────────────────────────────────────────────────────────
 
 async function loadFeeds() {
-  try {
-    const res = await fetch("/api/feeds", { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    state.items = data.items || [];
-    updateStatus(data);
-    buildFilters(state.items);
-    render();
-  } catch (err) {
+  const feedsP = fetchJson("/api/feeds");
+  const esportsP = fetchJson("/api/esports");
+  const [feeds, esports] = await Promise.allSettled([feedsP, esportsP]);
+
+  const feedsData = feeds.status === "fulfilled" ? feeds.value : null;
+  const esportsData = esports.status === "fulfilled" ? esports.value : null;
+
+  if (!feedsData && !esportsData) {
+    const err =
+      (feeds.reason && feeds.reason.message) ||
+      (esports.reason && esports.reason.message) ||
+      "both endpoints failed";
     document.getElementById("feed").innerHTML = `
       <div class="empty">
-        Failed to load feeds — ${escapeHtml(String(err.message || err))}
+        Failed to load feeds — ${escapeHtml(String(err))}
       </div>`;
+    return;
   }
+
+  const feedItems = (feedsData && feedsData.items) || [];
+  const esportsItems = (esportsData && esportsData.items) || [];
+
+  // Merge + dedupe by id, then by link as fallback
+  const seen = new Set();
+  const merged = [];
+  for (const item of [...feedItems, ...esportsItems]) {
+    const key = item.id || item.link || item.title;
+    if (key && !seen.has(key)) {
+      seen.add(key);
+      merged.push(item);
+    }
+  }
+  // Sort newest first; null timestamps last
+  merged.sort((a, b) => {
+    if (!a.published && !b.published) return 0;
+    if (!a.published) return 1;
+    if (!b.published) return -1;
+    return new Date(b.published) - new Date(a.published);
+  });
+
+  state.items = merged;
+  updateStatus(feedsData, esportsData, merged.length);
+  buildFilters(state.items);
+  render();
 }
 
-function updateStatus(data) {
-  const updated = data.generated_at ? new Date(data.generated_at) : null;
+async function fetchJson(url) {
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`${url} returned HTTP ${res.status}`);
+  return res.json();
+}
+
+function updateStatus(feedsData, esportsData, mergedItemCount) {
+  const generated =
+    (feedsData && feedsData.generated_at) ||
+    (esportsData && esportsData.generated_at);
   const lu = document.getElementById("last-update");
-  lu.textContent = updated ? formatTime(updated) : "—";
+  lu.textContent = generated ? formatTime(new Date(generated)) : "—";
   lu.classList.add("live");
-  document.getElementById(
-    "sources-ok"
-  ).textContent = `${data.sources_ok}/${data.sources_total}`;
-  document.getElementById("items-count").textContent = String(data.items_total);
+
+  const feedsOk = feedsData ? feedsData.sources_ok : 0;
+  const feedsTotal = feedsData ? feedsData.sources_total : 0;
+  const espOk = esportsData ? esportsData.games_ok : 0;
+  const espTotal = esportsData ? esportsData.games_total : 0;
+  document.getElementById("sources-ok").textContent = `${feedsOk + espOk}/${
+    feedsTotal + espTotal
+  }`;
+  document.getElementById("items-count").textContent = String(mergedItemCount);
 }
 
 // ─── FILTERS ──────────────────────────────────────────────────────────
