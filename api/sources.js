@@ -79,6 +79,12 @@ const SOURCES = [
     category: "news", region: "global", games: ["multiple"],
     keywords: AFRICA_KEYWORDS },
 
+  { url: "https://www.vlr.gg/rss/news",
+    source: "VLR.gg (Valorant)", platform: "Web",
+    category: "news", region: "global", games: ["valorant"],
+    keywords: AFRICA_KEYWORDS,
+    note: "Valorant news; nginx-hosted (no Cloudflare block from Vercel)" },
+
   // ─── FEDERATIONS ───────────────────────────────────────────────────────
   { url: "https://esportscommentator.blogspot.com/feeds/posts/default",
     source: "MSSA Esports Commentator", platform: "Web",
