@@ -3,7 +3,7 @@
   "functions": {
     "api/feeds.js": {
       "memory": 512,
-      "maxDuration": 30
+      "maxDuration": 50
     },
     "api/esports.js": {
       "memory": 512,

@@ -19,9 +19,10 @@ const BROWSER_UA =
 const FETCH_TIMEOUT_MS = 8000;
 
 // FlareSolverr-routed sources need much more headroom — Chromium boot +
-// (sometimes) Cloudflare challenge solving. Function maxDuration bumped to
-// 30s in vercel.json to accommodate. Set in v0.6.0 (Phase 3d).
-const FLARESOLVERR_TIMEOUT_MS = 28000;
+// (sometimes) heavy Cloudflare challenge solving. Function maxDuration is
+// 50s in vercel.json; per-source budget is 45s. Glitched and HLTV in
+// particular need >30s.
+const FLARESOLVERR_TIMEOUT_MS = 45000;
 const FLARESOLVERR_URL = process.env.FLARESOLVERR_URL;
 const FLARESOLVERR_CLIENT_ID = process.env.FLARESOLVERR_CLIENT_ID;
 const FLARESOLVERR_CLIENT_SECRET = process.env.FLARESOLVERR_CLIENT_SECRET;
@@ -333,7 +334,7 @@ module.exports = async (req, res) => {
   const mergedCount = merged.filter((it) => it.sources).length;
 
   const payload = {
-    version: "0.6.0",
+    version: "0.6.1",
     generated_at: new Date().toISOString(),
     duration_ms: Date.now() - startedAt,
     sources_total: totalCount,
