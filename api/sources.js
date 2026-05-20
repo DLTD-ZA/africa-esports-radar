@@ -42,41 +42,44 @@ const AFRICA_KEYWORDS = [
   "techgirl", "tech girl",
 ];
 
-// Used as a relevance gate for SA sources that publish mixed gaming/tech/news
-// content (Glitched, NAG, MyBroadband, etc.) plus personality YouTube channels.
-// Item must mention at least one of these to pass the filter.
-//
-// Adding terms is cheap; pruning false positives is the maintenance work.
+// Relevance gate for SA/global sources that publish mixed gaming/tech content.
+// v0.7.2 — tightened: drop ambiguous generic words (championship/league/cup/
+// season/team/broadcast — motorsport uses all those) in favour of esports-
+// specific phrases, named games, and named African orgs/teams.
 const ESPORTS_KEYWORDS = [
-  // Generic
-  "esport", "e-sport",
-  "tournament", "championship", "qualifier", "playoff", "finals", "grand final",
-  "competitive", "cup ", " cup", "league", "season ",
-  "lan event", "online qualifier", "bracket",
-  "roster", "signing", "transfer", "lineup",
-  "scrim", "showmatch",
-  "broadcast", "casted", "shoutcast", "caster",
-  // Games (substring matches the longer forms too)
-  "cs2", "counter-strike", "counter strike", "csgo",
-  "valorant", "vct",
-  "dota",
-  "league of legends", "lcs", "lec",
+  // Esports-specific phrases
+  "esport", "e-sport",                    // catches esports / e-sports
+  "esports tournament", "esports team", "esports league", "esports championship",
+  "esports player", "esports fan", "esports event", "esports industry",
+  "online qualifier", "lan event", "lan tournament",
+  "playoff bracket", "showmatch", "scrim",
+  "pro player", "pro team", "shoutcast", "shoutcaster",
+  "twitch streamer", "kick streamer", "twitch stream", "kick stream",
+  "competitive gaming", "competitive scene",
+
+  // Named games (substring matches the longer forms too)
+  "cs2", "counter-strike", "counter strike", "csgo", "cs:go",
+  "valorant", "vct ", "vct/",
+  "dota 2", "dota2",
+  "league of legends", "lcs ", "lec ", "lcs/", "lec/",
   "mobile legends", "mlbb",
   "pubg", "pmgc",
   "free fire",
   "rocket league", "rlcs",
-  "ea fc", "fc 26", "fc 25", "fifa",
+  "ea fc", "fc 26", "fc 25", "fc 24", "fifa esports", "fifae",
   "apex legends",
-  "overwatch",
+  "overwatch league", "overwatch esports",
   "fortnite",
-  // Organizations / teams / publishers
-  "carry1st", "mettlestate", "acgl", "mssa", "vs gaming", "telkom",
-  "bravado", " atk ", "goliath gaming", "energy esports",
+  "tekken", "street fighter", "evo championship", "evo tournament",
+  "sim racing", "iracing", "esoccer",
+
+  // African orgs / publishers / teams (high signal)
+  "carry1st", "mettlestate", "acgl", "mssa", "vs gaming",
+  "bravado gaming", "atk arena", "goliath gaming", "energy esports",
   "white rabbit gaming", "royalty esports", "exdee", "nixuh",
-  "five fears", "anubis", "twareg", "sahara warriors",
+  "five fears", "anubis gaming", "anubis esports",
+  "twareg esports", "sahara warriors",
   "fox gaming", "olympus gaming", "the black lotus",
-  // Streaming-adjacent (high signal)
-  "twitch streamer", "kick streamer",
 ];
 
 const SOURCES = [
