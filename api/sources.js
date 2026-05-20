@@ -42,6 +42,43 @@ const AFRICA_KEYWORDS = [
   "techgirl", "tech girl",
 ];
 
+// Used as a relevance gate for SA sources that publish mixed gaming/tech/news
+// content (Glitched, NAG, MyBroadband, etc.) plus personality YouTube channels.
+// Item must mention at least one of these to pass the filter.
+//
+// Adding terms is cheap; pruning false positives is the maintenance work.
+const ESPORTS_KEYWORDS = [
+  // Generic
+  "esport", "e-sport",
+  "tournament", "championship", "qualifier", "playoff", "finals", "grand final",
+  "competitive", "cup ", " cup", "league", "season ",
+  "lan event", "online qualifier", "bracket",
+  "roster", "signing", "transfer", "lineup",
+  "scrim", "showmatch",
+  "broadcast", "casted", "shoutcast", "caster",
+  // Games (substring matches the longer forms too)
+  "cs2", "counter-strike", "counter strike", "csgo",
+  "valorant", "vct",
+  "dota",
+  "league of legends", "lcs", "lec",
+  "mobile legends", "mlbb",
+  "pubg", "pmgc",
+  "free fire",
+  "rocket league", "rlcs",
+  "ea fc", "fc 26", "fc 25", "fifa",
+  "apex legends",
+  "overwatch",
+  "fortnite",
+  // Organizations / teams / publishers
+  "carry1st", "mettlestate", "acgl", "mssa", "vs gaming", "telkom",
+  "bravado", " atk ", "goliath gaming", "energy esports",
+  "white rabbit gaming", "royalty esports", "exdee", "nixuh",
+  "five fears", "anubis", "twareg", "sahara warriors",
+  "fox gaming", "olympus gaming", "the black lotus",
+  // Streaming-adjacent (high signal)
+  "twitch streamer", "kick streamer",
+];
+
 const SOURCES = [
   // ─── SA NEWS (Cloudflare-blocked from Vercel — via FlareSolverr) ───────
   // Each request takes ~10–28s (Chromium boot + CF challenge solve). Per-source
@@ -50,21 +87,25 @@ const SOURCES = [
   { url: "https://www.glitched.online/feed/",
     source: "Glitched Africa", platform: "Web",
     category: "news", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS,
     useFlareSolverr: true, note: "Cloudflare-protected; via FlareSolverr" },
 
   { url: "https://www.nag.co.za/feed/",
     source: "NAG (New Age Gaming)", platform: "Web",
     category: "news", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS,
     useFlareSolverr: true, note: "Cloudflare-protected; via FlareSolverr" },
 
   { url: "https://mybroadband.co.za/news/gaming/feed",
     source: "MyBroadband Gaming", platform: "Web",
     category: "news", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS,
     useFlareSolverr: true, note: "Cloudflare-protected; via FlareSolverr" },
 
   { url: "https://www.htxt.co.za/category/gaming/feed/",
     source: "Hypertext Gaming", platform: "Web",
     category: "news", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS,
     useFlareSolverr: true, note: "Cloudflare-protected; via FlareSolverr" },
 
   { url: "https://www.hltv.org/rss/news",
@@ -73,14 +114,18 @@ const SOURCES = [
     keywords: AFRICA_KEYWORDS,
     useFlareSolverr: true, note: "Cloudflare-protected; via FlareSolverr" },
 
-  // ─── SA NEWS & MEDIA (WordPress /feed/ — should work after gzip fix) ───
+  // ─── SA NEWS & MEDIA (WordPress /feed/) ────────────────────────────────
+  // On-topic by name (no filter): Esports Central, Esports Africa News,
+  //   Games Industry Africa.
+  // Mixed content (filter via ESPORTS_KEYWORDS): Stuff SA, Tech Girl, Vamers.
   { url: "https://esportscentral.co.za/feed/",
     source: "Esports Central", platform: "Web",
     category: "news", region: "sa", games: ["general"] },
 
   { url: "https://stuff.co.za/category/gaming/feed/",
     source: "Stuff SA — Gaming", platform: "Web",
-    category: "news", region: "sa", games: ["general"] },
+    category: "news", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS },
 
   { url: "https://esportsafricanews.com/feed/",
     source: "Esports Africa News", platform: "Web",
@@ -88,7 +133,8 @@ const SOURCES = [
 
   { url: "https://techgirl.co.za/feed/",
     source: "Tech Girl Blog", platform: "Web",
-    category: "news", region: "sa", games: ["general"] },
+    category: "news", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS },
 
   { url: "https://gamesindustryafrica.com/feed/",
     source: "Games Industry Africa", platform: "Web",
@@ -96,7 +142,8 @@ const SOURCES = [
 
   { url: "https://vamers.com/feed/",
     source: "Vamers", platform: "Web",
-    category: "news", region: "sa", games: ["general"] },
+    category: "news", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS },
 
   // ─── INTERNATIONAL ESPORTS MEDIA (Africa-filtered) ─────────────────────
   { url: "https://dotesports.com/feed",
@@ -181,21 +228,27 @@ const SOURCES = [
   //   @DarknessRoshi  (2.1M+, SA GTA content)
   //   @LosSantosLeaks (1.8M+, SA GTA content)
 
+  // Mixed-content personalities — filter via ESPORTS_KEYWORDS to drop
+  // general gaming/vlog content while keeping tournament/competitive videos.
   { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCjgzxIZmwSc-ksJRdGLIuMw",
     source: "Grant Hinds (YouTube)", platform: "YouTube",
-    category: "video", region: "sa", games: ["general"] },
+    category: "video", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS },
 
   { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCpPpQ-TsXr3XTWmyr_mDo-w",
     source: "ArcadeZA (YouTube)", platform: "YouTube",
-    category: "video", region: "sa", games: ["general"] },
+    category: "video", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS },
 
   { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCVlh1uuYKDvvHv6AgFZc-Bw",
     source: "Glitched (YouTube)", platform: "YouTube",
-    category: "video", region: "sa", games: ["general"] },
+    category: "video", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS },
 
   { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCNleRx-SOy-qpTHohzsMS6Q",
     source: "NAG (YouTube)", platform: "YouTube",
-    category: "video", region: "sa", games: ["general"] },
+    category: "video", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS },
 
   { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCTQJBEHfnRtTptn6CVs_dxw",
     source: "Esports Central (YouTube)", platform: "YouTube",
@@ -203,15 +256,18 @@ const SOURCES = [
 
   { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCL3pNEgCMctHbqHHr2Ceq3A",
     source: "Spyro ZA (YouTube)", platform: "YouTube",
-    category: "video", region: "sa", games: ["general"] },
+    category: "video", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS },
 
   { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCbyELsBEIp3BY5sIhD9chLg",
     source: "Chani ZA (YouTube)", platform: "YouTube",
-    category: "video", region: "sa", games: ["general"] },
+    category: "video", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS },
 
   { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UC0zvD50_4-Jhgvad6kZoktA",
     source: "Luca Rakic (YouTube)", platform: "YouTube",
-    category: "video", region: "sa", games: ["general"] },
+    category: "video", region: "sa", games: ["general"],
+    keywords: ESPORTS_KEYWORDS },
 
   { url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCPZhHphk5dwumWfw2ehbOng",
     source: "ACGL (YouTube)", platform: "YouTube",
@@ -238,4 +294,4 @@ const SOURCES = [
     note: "Real motorsport — sim racing adjacent" },
 ];
 
-module.exports = { SOURCES, AFRICA_KEYWORDS, RSSHUB };
+module.exports = { SOURCES, AFRICA_KEYWORDS, ESPORTS_KEYWORDS, RSSHUB };
