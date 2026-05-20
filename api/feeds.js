@@ -334,7 +334,7 @@ module.exports = async (req, res) => {
   const mergedCount = merged.filter((it) => it.sources).length;
 
   const payload = {
-    version: "0.7.0",
+    version: "0.7.1",
     generated_at: new Date().toISOString(),
     duration_ms: Date.now() - startedAt,
     sources_total: totalCount,

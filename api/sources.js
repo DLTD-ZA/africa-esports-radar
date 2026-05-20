@@ -291,7 +291,8 @@ const SOURCES = [
   { url: `${RSSHUB}/telegram/channel/motorsportsouthafrica`,
     source: "Motorsport South Africa (Telegram)", platform: "Telegram",
     category: "announcement", region: "sa", games: ["motorsport"],
-    note: "Real motorsport — sim racing adjacent" },
+    keywords: ESPORTS_KEYWORDS,
+    note: "Real motorsport — only sim-racing-adjacent posts pass" },
 ];
 
 module.exports = { SOURCES, AFRICA_KEYWORDS, ESPORTS_KEYWORDS, RSSHUB };
