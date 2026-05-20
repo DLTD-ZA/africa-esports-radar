@@ -1,16 +1,16 @@
 // ============================================================================
-// Africa Esports Radar — curated source list (v0.3.0)
+// Africa Esports Radar — curated source list (v0.6.0)
 // ============================================================================
 //
+// v0.6.0 (Phase 3d): restored 5 Cloudflare-blocked SA news sources via
+// self-hosted FlareSolverr behind a Cloudflare Access service token.
+// Entries are flagged `useFlareSolverr: true` so feeds.js routes them
+// through the tunnel instead of direct fetch.
+//
 // v0.3.0 (Phase 3a): added 11 SA/African YouTube channels via native
-// youtube.com/feeds/videos.xml feeds (Atom). No auth, no RSSHub, works from
-// Vercel IPs. Stragglers (DarknessRoshi, LosSantosLeaks) pending current handle.
+// youtube.com/feeds/videos.xml feeds (Atom).
 //
 // v0.2.2 baseline: 19 entries verified live after gzip fix.
-//
-// Still excluded (Cloudflare 403s Vercel IPs — confirmed RSSHub on Vercel
-// hits the same 403, awaiting FlareSolverr on a non-Vercel host):
-//   - Glitched Africa, NAG, MyBroadband Gaming, Hypertext Gaming, HLTV
 //
 // Still excluded (wrong URL / dead domain):
 //   - SA Gamer, Esports Charts, Gaming and Esports SA, ACGL website
@@ -43,6 +43,36 @@ const AFRICA_KEYWORDS = [
 ];
 
 const SOURCES = [
+  // ─── SA NEWS (Cloudflare-blocked from Vercel — via FlareSolverr) ───────
+  // Each request takes ~10–28s (Chromium boot + CF challenge solve). Per-source
+  // timeout in feeds.js is 28s, function maxDuration is 30s. Runs in parallel
+  // with all other sources so total wall-clock is still ~28s worst case.
+  { url: "https://www.glitched.online/feed/",
+    source: "Glitched Africa", platform: "Web",
+    category: "news", region: "sa", games: ["general"],
+    useFlareSolverr: true, note: "Cloudflare-protected; via FlareSolverr" },
+
+  { url: "https://www.nag.co.za/feed/",
+    source: "NAG (New Age Gaming)", platform: "Web",
+    category: "news", region: "sa", games: ["general"],
+    useFlareSolverr: true, note: "Cloudflare-protected; via FlareSolverr" },
+
+  { url: "https://mybroadband.co.za/news/gaming/feed",
+    source: "MyBroadband Gaming", platform: "Web",
+    category: "news", region: "sa", games: ["general"],
+    useFlareSolverr: true, note: "Cloudflare-protected; via FlareSolverr" },
+
+  { url: "https://www.htxt.co.za/category/gaming/feed/",
+    source: "Hypertext Gaming", platform: "Web",
+    category: "news", region: "sa", games: ["general"],
+    useFlareSolverr: true, note: "Cloudflare-protected; via FlareSolverr" },
+
+  { url: "https://www.hltv.org/rss/news",
+    source: "HLTV", platform: "Web",
+    category: "news", region: "global", games: ["cs2"],
+    keywords: AFRICA_KEYWORDS,
+    useFlareSolverr: true, note: "Cloudflare-protected; via FlareSolverr" },
+
   // ─── SA NEWS & MEDIA (WordPress /feed/ — should work after gzip fix) ───
   { url: "https://esportscentral.co.za/feed/",
     source: "Esports Central", platform: "Web",

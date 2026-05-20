@@ -15,8 +15,16 @@ const BROWSER_UA =
 
 // Bumped from 5.5s → 8s in v0.3.2 so RSSHub-backed Telegram sources can
 // cold-start within budget. Sources run in parallel via Promise.allSettled,
-// so the function still returns in ~max(timeouts) ≈ 8s, under the 10s cap.
+// so the function still returns in ~max(timeouts).
 const FETCH_TIMEOUT_MS = 8000;
+
+// FlareSolverr-routed sources need much more headroom — Chromium boot +
+// (sometimes) Cloudflare challenge solving. Function maxDuration bumped to
+// 30s in vercel.json to accommodate. Set in v0.6.0 (Phase 3d).
+const FLARESOLVERR_TIMEOUT_MS = 28000;
+const FLARESOLVERR_URL = process.env.FLARESOLVERR_URL;
+const FLARESOLVERR_CLIENT_ID = process.env.FLARESOLVERR_CLIENT_ID;
+const FLARESOLVERR_CLIENT_SECRET = process.env.FLARESOLVERR_CLIENT_SECRET;
 
 // rss-parser used only for parsing — we do the HTTP ourselves with native fetch
 const parser = new Parser({
@@ -68,6 +76,71 @@ async function fetchXml(url, timeoutMs = FETCH_TIMEOUT_MS) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+// Cloudflare-blocked sites: route through self-hosted FlareSolverr behind a
+// CF Access service-token gate. FlareSolverr boots a Chromium tab, fetches
+// the URL, and returns the rendered DOM wrapped in <pre>...</pre>. We
+// extract the XML from inside the <pre>.
+async function fetchXmlViaFlareSolverr(url, timeoutMs = FLARESOLVERR_TIMEOUT_MS) {
+  if (!FLARESOLVERR_URL || !FLARESOLVERR_CLIENT_ID || !FLARESOLVERR_CLIENT_SECRET) {
+    throw new Error("FlareSolverr env vars not configured");
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(FLARESOLVERR_URL, {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        "CF-Access-Client-Id": FLARESOLVERR_CLIENT_ID,
+        "CF-Access-Client-Secret": FLARESOLVERR_CLIENT_SECRET,
+      },
+      body: JSON.stringify({
+        cmd: "request.get",
+        url,
+        maxTimeout: Math.max(15000, timeoutMs - 2000),
+      }),
+    });
+    if (!res.ok) {
+      throw new Error(`FlareSolverr HTTP ${res.status} ${res.statusText}`);
+    }
+    const body = await res.json();
+    if (body.status !== "ok") {
+      throw new Error(`FlareSolverr ${body.status}: ${body.message || "no detail"}`);
+    }
+    const sol = body.solution || {};
+    if (sol.status !== 200) {
+      throw new Error(`upstream HTTP ${sol.status} via FlareSolverr`);
+    }
+    return unwrapBrowserXml(sol.response || "");
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// FlareSolverr returns the page HTML as rendered by Chromium. For XML feeds
+// the browser wraps the content in <pre>…</pre> with HTML-encoded entities.
+// Pull the inner XML back out so rss-parser can read it.
+function unwrapBrowserXml(html) {
+  const trimmed = html.trim();
+  // If the response is already XML (no Chromium wrapping), return as-is.
+  if (trimmed.startsWith("<?xml") || trimmed.startsWith("<rss") || trimmed.startsWith("<feed")) {
+    return trimmed;
+  }
+  const m = trimmed.match(/<pre[^>]*>([\s\S]*?)<\/pre>/i);
+  if (!m) {
+    // Maybe a Chromium "RSS detected" view-source-style — just return raw.
+    return trimmed;
+  }
+  return m[1]
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
 }
 
 // ─── DEDUP: simple-signal multi-source merging (Phase 5.0) ───────────────
@@ -161,7 +234,9 @@ function mergeDuplicateStories(items) {
 
 async function fetchSource(src) {
   try {
-    const xml = await fetchXml(src.url);
+    const xml = src.useFlareSolverr
+      ? await fetchXmlViaFlareSolverr(src.url)
+      : await fetchXml(src.url);
     const feed = await parser.parseString(xml);
     const items = (feed.items || [])
       .filter((item) => matchesKeywords(item, src.keywords))
@@ -187,7 +262,10 @@ async function fetchSource(src) {
     return { ok: true, source: src.source, platform: src.platform, items };
   } catch (err) {
     let msg = String(err.message || err);
-    if (err.name === "AbortError") msg = `Timed out after ${FETCH_TIMEOUT_MS}ms`;
+    if (err.name === "AbortError") {
+      const t = src.useFlareSolverr ? FLARESOLVERR_TIMEOUT_MS : FETCH_TIMEOUT_MS;
+      msg = `Timed out after ${t}ms`;
+    }
     return {
       ok: false,
       source: src.source,
@@ -255,7 +333,7 @@ module.exports = async (req, res) => {
   const mergedCount = merged.filter((it) => it.sources).length;
 
   const payload = {
-    version: "0.5.0",
+    version: "0.6.0",
     generated_at: new Date().toISOString(),
     duration_ms: Date.now() - startedAt,
     sources_total: totalCount,
